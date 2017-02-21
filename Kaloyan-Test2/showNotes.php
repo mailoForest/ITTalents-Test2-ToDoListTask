@@ -1,5 +1,5 @@
 <h2>Your notes ordered:</h2>
-<table>
+<table border="1">
     <?php
     $notes = [];
 
@@ -30,7 +30,7 @@
     <?php
         for ($i = 0; $i <= 5; $i++){
             echo "<tr><td>$i</td>";
-            echo "<td>". $notes[$i] ."</td></tr>";
+            echo "<td>". implode("<br/>",$notes[$i]) ."</td></tr>";
         }
     ?>
 <?php

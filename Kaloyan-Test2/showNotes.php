@@ -17,13 +17,6 @@
 
             $notes[$getPriority][] = $line;
         }
-
-//        foreach ($notes as $note){
-//            $countNotes = count($note);
-//            if ($longestListOfPriorities < $countNotes){
-//                $longestListOfPriorities = $countNotes;
-//            }
-//        }
     ?>
 
     <tr><th>Priority</th><th>Text</th></tr>

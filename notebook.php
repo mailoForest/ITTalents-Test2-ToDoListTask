@@ -1,44 +1,42 @@
 <?php
 $notes = [];
-$image = '';
 $delNote = 0;
 if (isset($_POST['submit'])){
-    $priority = htmlentities($_POST['priority']);
-    $note = htmlentities($_POST['note']);
+    $priority = trim($_POST['priority']);
+    $note = trim($_POST['note']);
 
-    if ($note === '' || $note === '\n' ||  strlen($note) < 1 || strlen($note) > 50){
-        echo "Cannot send empty notes or ore than 50 chars!";
+    if ($note === '' || strlen($note) > 50){
+        echo "Cannot scribe empty notes or more than 50 chars!";
     } else if(!is_numeric($priority) || $priority > 5 || $priority < 1){
         echo "Wrong priority!";
     } else {
-        $note .= "#$priority";
+        $note = htmlentities($note) . "#$priority";
 
-        $handle2 = fopen("notes.txt", 'r');
-            while (!feof($handle2)){
-                $line = fgets($handle2);
+        $handle = fopen("notes.txt", 'r');
 
-                $notes[] = $line;
+            while (!feof($handle)){
+                $line = trim(fgets($handle));
+
+                if ($line !== ''){
+                    $notes[] = $line;
+                }
             }
-        fclose($handle2);
+            $notes[] = $note;
+        fclose($handle);
 
-        $notes[] = "\r\n$note";
-
-        $handle1 = fopen('notes.txt','w');
-
-        foreach ($notes as $n) {
-            fwrite($handle1, $n);
-        }
-
-        fclose($handle1);
+        $implodedFile = implode("\r\n", $notes);
+        file_put_contents('notes.txt', $implodedFile);
     }
 }
-$explodedFile = explode("\n", file_get_contents('notes.txt'));
 
-if (isset($_GET['delNote']) && is_numeric($_GET['delNote']) && $_GET['delNote'] <= count($explodedFile) && $_GET['delNote'] >= 1) {
-    $delNote = $_GET['delNote'];
-    unset($explodedFile[$delNote - 1]);
+if (isset($_POST['delete']) && isset($_POST['delNote']) && is_numeric($_POST['delNote']) && $_POST['delNote'] >= 1) {
+    $delNote = $_POST['delNote'];
 
-    $implodedFile = implode("\r\n", $explodedFile);
+    $notes = explode("\n",file_get_contents('notes.txt'));
+
+    array_splice($notes, $delNote - 1, 1);
+
+    $implodedFile = implode("\n", $notes);
 
     file_put_contents('notes.txt', $implodedFile);
 }
@@ -78,7 +76,7 @@ if (isset($_GET['delNote']) && is_numeric($_GET['delNote']) && $_GET['delNote'] 
         <br>
         <input type="submit" name="submit" value="Scribe note">
     </form>
-    <form action="./notebook.php">
+    <form action="./notebook.php" method="post">
         <hr>
         <label for="delNote">Enter the serial number of the note you wish to delete: <input type="text" id="delNote" name="delNote" maxlength="2"></label>
         <input type="submit" value="Delete" name="delete">
@@ -87,20 +85,21 @@ if (isset($_GET['delNote']) && is_numeric($_GET['delNote']) && $_GET['delNote'] 
 <h2>Your notes so far:</h2>
 <ol>
     <?php
-    $handle = fopen('notes.txt','r');
-    while (!feof($handle)){
-        $line = fgets($handle);
 
-        include 'getPriority.php';
+    $handle = fopen('notes.txt', 'r');
+    $image = '';
 
-        switch ($getPriority){
+    while(!feof($handle)) {
+        include 'priority.php';
+
+        switch ($priority){
+            case 0: $image = ""; break;
             case 1: $image = "images/1.png"; break;
             case 2: $image = "images/2.png"; break;
             case 3: $image = "images/3.png"; break;
             case 4: $image = "images/4.gif"; break;
             case 5: $image = "images/5.png"; break;
         }
-
         echo "<li>$line<img class='icon' src=\"$image\"></li>";
     }
     fclose($handle);
